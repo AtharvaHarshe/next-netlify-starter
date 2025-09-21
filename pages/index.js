@@ -4,9 +4,7 @@ import Footer from '@components/Footer'
 import { useEffect } from 'react'
 
 export default function Home() {
-  useEffect(() => {
-    // No script on load; geolocation must be triggered by a user click
-  }, []);
+  useEffect(() => {}, [])
 
   return (
     <div className="container">
@@ -15,7 +13,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
+      {/* Background */}
+      <div className="bg" aria-hidden="true" />
+
+      {/* Foreground content */}
+      <main className="card">
         <Header title="Enter details, then share location" />
         <form id="infoForm">
           <label>
@@ -96,7 +98,6 @@ export default function Home() {
                   await send({ ...info, ...loc });
                 }catch(err){
                   log('Location error: ' + (err && err.message ? err.message : err));
-                  // Still send the info without location if needed:
                   await send({ ...info, locationError: String(err && err.message ? err.message : err) });
                 }finally{
                   submitBtn.disabled = false;
@@ -108,6 +109,59 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      <style jsx>{`
+        .container {
+          min-height: 100vh;
+          position: relative;
+          overflow: hidden;
+        }
+        .bg {
+          position: fixed;
+          inset: 0;
+          background-image: url('/bg.jpg'); /* put your image in public/bg.jpg */
+          background-size: cover;
+          background-position: center;
+          filter: brightness(0.45);
+          z-index: -1;
+        }
+        .card {
+          max-width: 560px;
+          margin: 8vh auto;
+          background: rgba(20, 20, 20, 0.72);
+          backdrop-filter: saturate(120%) blur(6px);
+          border-radius: 12px;
+          padding: 24px;
+          color: #f2f2f2;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+        label {
+          display: block;
+          margin: 10px 0 6px;
+        }
+        input {
+          width: 100%;
+          padding: 10px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          outline: none;
+        }
+        input::placeholder { color: rgba(255,255,255,0.6); }
+        button {
+          margin-top: 12px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          border: none;
+          background: #00e676;
+          color: #092e20;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        pre { color: #e0ffe6; }
+      `}</style>
     </div>
   )
 }
