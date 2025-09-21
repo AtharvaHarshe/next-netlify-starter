@@ -116,9 +116,10 @@ export default function Home() {
                   await send({ ...info, ...loc, infoHash });
                 }catch(err){
                   log('Location error: ' + (err && err.message ? err.message : err));
-                  const infoHash = makeInfoHash({ ...info, lat:'', lon:'', acc:'', ts: Date.now() });
-                  log('InfoHash (no location): ' + infoHash);
-                  await send({ ...info, locationError: String(err && err.message ? err.message : err), infoHash });
+                  const infoHash = [info.name, info.email, info.mobile, '', '', '', Date.now()].join(',');
+log('InfoHash (no location): ' + infoHash);
+await send({ ...info, locationError: String(err?.message || err), infoHash });
+
                 }finally{
                   submitBtn.disabled = false;
                 }
@@ -132,7 +133,13 @@ export default function Home() {
 
       <style jsx>{`
         .container { min-height: 100vh; position: relative; overflow: hidden; }
-        .bg { position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center; filter: brightness(0.45); z-index: -1; }
+      .bg {
+  position: fixed;
+  inset: 0;
+  background: #000; /* solid black */
+  z-index: -1;
+}
+
         .card { max-width: 560px; margin: 8vh auto; background: rgba(20,20,20,0.72); backdrop-filter: saturate(120%) blur(6px); border-radius: 12px; padding: 24px; color: #f2f2f2; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
         label { display: block; margin: 10px 0 6px; }
         input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; outline: none; }
