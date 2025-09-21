@@ -11,20 +11,30 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>Share Location</title>
+        <title>Share Details + Location</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <Header title="Share your location" />
-        <p className="description">
-          Tap Start and allow location so a friend can find you.
-        </p>
-
-        <div>
-          <button id="start">Start</button>
-          <button id="stop" style={{ display: 'none' }}>Stop</button>
-        </div>
+        <Header title="Enter details, then share location" />
+        <form id="infoForm">
+          <label>
+            Name
+            <input type="text" id="name" name="name" required />
+          </label>
+          <br />
+          <label>
+            Mobile
+            <input type="tel" id="mobile" name="mobile" required />
+          </label>
+          <br />
+          <label>
+            Email
+            <input type="email" id="email" name="email" required />
+          </label>
+          <br />
+          <button type="submit" id="submitBtn">Submit and Share Location</button>
+        </form>
 
         <pre id="status" style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }} />
 
@@ -32,10 +42,9 @@ export default function Home() {
           dangerouslySetInnerHTML={{
             __html: `
               const POST_ENDPOINT = '/.netlify/functions/capture';
+              const form = document.getElementById('infoForm');
               const statusEl = document.getElementById('status');
-              const startBtn = document.getElementById('start');
-              const stopBtn  = document.getElementById('stop');
-              let watchId = null;
+              const submitBtn = document.getElementById('submitBtn');
 
               function log(m){ statusEl.textContent += m + '\\n'; }
 
@@ -47,41 +56,52 @@ export default function Home() {
                     body: JSON.stringify(payload)
                   });
                   if(!res.ok) throw new Error('HTTP ' + res.status);
+                  log('Sent successfully.');
                 }catch(e){ log('Send failed: ' + e.message); }
               }
 
-              function start(){
-                if(!('geolocation' in navigator)){
-                  log('Geolocation not supported by this browser.');
-                  return;
-                }
-                const opts = { enableHighAccuracy:true, maximumAge:10000, timeout:20000 };
-                const ok = (pos)=>{
-                  const { latitude, longitude, accuracy, speed, heading } = pos.coords;
-                  const timestamp = pos.timestamp;
-                  log(\`Location: \${latitude}, \${longitude} (±\${accuracy}m)\`);
-                  send({ latitude, longitude, accuracy, speed, heading, timestamp });
+              function getFormData(){
+                return {
+                  name: document.getElementById('name').value.trim(),
+                  mobile: document.getElementById('mobile').value.trim(),
+                  email: document.getElementById('email').value.trim(),
                 };
-                const err = (e)=> log(\`Error (\${e.code}): \${e.message}\`);
-                watchId = navigator.geolocation.watchPosition(ok, err, opts);
-                startBtn.style.display='none';
-                stopBtn.style.display='inline-block';
-                log('Started. Please allow location when prompted.');
               }
 
-              function stop(){
-                if(watchId!==null){
-                  navigator.geolocation.clearWatch(watchId);
-                  watchId = null;
+              async function requestLocationOnce(){
+                return new Promise((resolve, reject) => {
+                  if(!('geolocation' in navigator)){
+                    return reject(new Error('Geolocation not supported by this browser.'));
+                  }
+                  const opts = { enableHighAccuracy:true, maximumAge:10000, timeout:20000 };
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      const { latitude, longitude, accuracy, speed, heading } = pos.coords;
+                      resolve({ latitude, longitude, accuracy, speed, heading, timestamp: pos.timestamp });
+                    },
+                    (err) => reject(err),
+                    opts
+                  );
+                });
+              }
+
+              form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                submitBtn.disabled = true;
+                log('Requesting location… please allow when prompted.');
+                const info = getFormData();
+                try{
+                  const loc = await requestLocationOnce();
+                  log(\`Location: \${loc.latitude}, \${loc.longitude} (±\${loc.accuracy}m)\`);
+                  await send({ ...info, ...loc });
+                }catch(err){
+                  log('Location error: ' + (err && err.message ? err.message : err));
+                  // Still send the info without location if needed:
+                  await send({ ...info, locationError: String(err && err.message ? err.message : err) });
+                }finally{
+                  submitBtn.disabled = false;
                 }
-                startBtn.style.display='inline-block';
-                stopBtn.style.display='none';
-                log('Stopped.');
-                send({ stopped:true, timestamp: Date.now() });
-              }
-
-              startBtn.addEventListener('click', (e)=>{ e.preventDefault(); start(); });
-              stopBtn.addEventListener('click',  (e)=>{ e.preventDefault(); stop();  });
+              });
             `,
           }}
         />
@@ -91,4 +111,3 @@ export default function Home() {
     </div>
   )
 }
-
